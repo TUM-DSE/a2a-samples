@@ -11,6 +11,7 @@ from a2a.types import (
 from agent_executor import (
     HelloWorldAgentExecutor,  # type: ignore[import-untyped]
 )
+from TimedRequestHandler import *
 
 
 if __name__ == '__main__':
@@ -37,7 +38,8 @@ if __name__ == '__main__':
     public_agent_card = AgentCard(
         name='Hello World Agent',
         description='Just a hello world agent',
-        url='http://localhost:9999/',
+        #url='http://localhost:9999/',
+        url='http://192.168.32.10:9999',
         version='1.0.0',
         default_input_modes=['text'],
         default_output_modes=['text'],
@@ -63,7 +65,8 @@ if __name__ == '__main__':
         }
     )
 
-    request_handler = DefaultRequestHandler(
+    #request_handler = DefaultRequestHandler(
+    request_handler = TimedRequestHandler(
         agent_executor=HelloWorldAgentExecutor(),
         task_store=InMemoryTaskStore(),
     )
@@ -74,4 +77,5 @@ if __name__ == '__main__':
         extended_agent_card=specific_extended_agent_card,
     )
 
-    uvicorn.run(server.build(), host='0.0.0.0', port=9999)
+    #uvicorn.run(server.build(), host='0.0.0.0', port=9999)
+    uvicorn.run(server.build(), host='192.168.32.10', port=9999)

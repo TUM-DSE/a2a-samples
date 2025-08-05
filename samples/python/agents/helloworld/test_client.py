@@ -17,6 +17,9 @@ from a2a.utils.constants import (
     EXTENDED_AGENT_CARD_PATH,
 )
 
+from my_outl import *
+
+BENCHMARK_PORT = 0xf4 
 
 async def main() -> None:
     # Configure logging to show INFO level messages
@@ -25,7 +28,8 @@ async def main() -> None:
 
     # --8<-- [start:A2ACardResolver]
 
-    base_url = 'http://localhost:9999'
+   # base_url = 'http://localhost:9999'
+    base_url = 'http://192.168.32.10:9999'
 
     async with httpx.AsyncClient() as httpx_client:
         # Initialize A2ACardResolver
@@ -101,6 +105,9 @@ async def main() -> None:
                 'Failed to fetch the public agent card. Cannot continue.'
             ) from e
 
+        print("Got agent card\n")
+        
+
         # --8<-- [start:send_message]
         client = A2AClient(
             httpx_client=httpx_client, agent_card=final_agent_card_to_use
@@ -120,9 +127,16 @@ async def main() -> None:
             id=str(uuid4()), params=MessageSendParams(**send_message_payload)
         )
 
+        lib.my_ioperm(c_ushort(BENCHMARK_PORT));
+        lib.my_outl(1, c_ubyte(200))
         response = await client.send_message(request)
+        lib.my_outl(1, c_ubyte(203))
         print(response.model_dump(mode='json', exclude_none=True))
         # --8<-- [end:send_message]
+
+        print("Got normal message")
+        print(request)
+        exit(0)
 
         # --8<-- [start:send_message_streaming]
 
