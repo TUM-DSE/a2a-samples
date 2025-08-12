@@ -10,15 +10,20 @@ from a2a.types import (
     AgentCapabilities,
     AgentCard,
     AgentSkill,
+    SendMessageRequest,
 )
 from TimedRequestHandler import *
+import sys
+
+def clean_shm(shm, size):
+    shm.buf[:size] = b'\x00' * size
+
 
 def read_request_from_shm(shm, size):
     b = shm.buf[:size].tobytes()
-    shm.buf[:size] = b'\x00' * size
     return b.rstrip(b"\x00")
 
-async def main_loop():
+async def main_loop(payload_size):
 
     skill = AgentSkill(
         id='hello_world',
@@ -54,28 +59,37 @@ async def main_loop():
         task_store=InMemoryTaskStore(),
     )
     handler = JSONRPCHandler(request_handler=request_handler, agent_card=public_agent_card)
-    shm = shared_memory.SharedMemory(name="test_shm", create=True, size=1024);
+    shm = shared_memory.SharedMemory(name="test_shm", create=True, size=payload_size);
     while True:
-        raw = read_request_from_shm(shm, 1024)
+        raw = read_request_from_shm(shm, payload_size)
         if not raw:
-            await asyncio.sleep(0.1)
+#            await asyncio.sleep(0.1)
             continue
         req = json.loads(raw.decode())
         # mimic ASGI request body and request scope
-        print(f'Request: {raw.decode()}')
+       # print(f'Request: {raw.decode()}')
         #response = await handler.handle_jsonrpc(req)
-        mparams = MessageSendParams.model_validate_json(raw.decode()) 
-        print(f"Mparams: {mparams}")
-        response = await handler.request_handler.on_message_send(params=mparams)
+       # mparams = MessageSendParams.model_validate_json(raw.decode()) 
+        send_req = SendMessageRequest.model_validate_json(raw.decode())
+        #print(f"Mparams: {send_req}")
+        #response = await handler.request_handler.on_message_send(params=mparams)
+        response = await handler.on_message_send(send_req)
         #resp_bytes = json.dumps(response).encode()
-        print(f'Response: {response}')
+       # print(f'Response: {response}')
         # write back to shared memory or another output region...
         # (you define output buffer similarly)
+        clean_shm(shm, payload_size)
         await asyncio.sleep(0.1)
     shm.close()
     shm.unlink()
 
 if __name__ == "__main__":
     import argparse
-    asyncio.run(main_loop())
+
+    if len(sys.argv) != 2:
+        print(f"Usage: python {sys.argv[0]} <payload_size>")
+        sys.exit(1)
+    payload_size = int(sys.argv[1])     
+
+    asyncio.run(main_loop(payload_size + 1000))
 

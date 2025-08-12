@@ -1,4 +1,5 @@
 import logging
+import sys
 
 from typing import Any
 from uuid import uuid4
@@ -21,7 +22,7 @@ from my_outl import *
 
 BENCHMARK_PORT = 0xf4 
 
-async def main() -> None:
+async def main(payload_size) -> None:
     # Configure logging to show INFO level messages
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)  # Get a logger instance
@@ -114,11 +115,12 @@ async def main() -> None:
         )
         logger.info('A2AClient initialized.')
 
+        text = "a" * payload_size
         send_message_payload: dict[str, Any] = {
             'message': {
                 'role': 'user',
                 'parts': [
-                    {'kind': 'text', 'text': 'how much is 10 USD in INR?'}
+                    {'kind': 'text', 'text': f'{text}'}
                 ],
                 'messageId': uuid4().hex,
             },
@@ -127,15 +129,17 @@ async def main() -> None:
             id=str(uuid4()), params=MessageSendParams(**send_message_payload)
         )
 
-        lib.my_ioperm(c_ushort(BENCHMARK_PORT));
-        lib.my_outl(1, c_ubyte(200))
-        response = await client.send_message(request)
-        lib.my_outl(1, c_ubyte(203))
+        for i in range(100):
+            print(f'{i}/100')
+            lib.my_ioperm(c_ushort(BENCHMARK_PORT));
+            lib.my_outl(1, c_ubyte(200))
+            response = await client.send_message(request)
+            lib.my_outl(1, c_ubyte(203))
         print(response.model_dump(mode='json', exclude_none=True))
         # --8<-- [end:send_message]
 
         print("Got normal message")
-        print(request)
+        #print(request)
         exit(0)
 
         # --8<-- [start:send_message_streaming]
@@ -154,4 +158,8 @@ async def main() -> None:
 if __name__ == '__main__':
     import asyncio
 
-    asyncio.run(main())
+    if len(sys.argv) != 2:
+        print(f"Usage: python {sys.argv[0]} <payload_size>")
+        sys.exit(1)
+    payload_size = int(sys.argv[1])     
+    asyncio.run(main(payload_size))

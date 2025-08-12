@@ -270,9 +270,9 @@ class TimedRequestHandler(RequestHandler):
         """
         lib.my_ioperm(c_ushort(BENCHMARK_PORT));
         lib.my_outl(1, c_ubyte(201))
-        print("In 'on_message_send'!")
+        #print("In 'on_message_send'!")
         print(f'Message send params: {params}')
-        print(f'ServerCallContext: {context}')
+        #print(f'ServerCallContext: {context}')
         (
             task_manager,
             task_id,

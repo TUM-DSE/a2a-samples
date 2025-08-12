@@ -77,5 +77,6 @@ if __name__ == '__main__':
         extended_agent_card=specific_extended_agent_card,
     )
 
+
     #uvicorn.run(server.build(), host='0.0.0.0', port=9999)
     uvicorn.run(server.build(), host='192.168.32.10', port=9999)
