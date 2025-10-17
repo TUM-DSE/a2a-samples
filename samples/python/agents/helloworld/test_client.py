@@ -22,7 +22,7 @@ from my_outl import *
 
 BENCHMARK_PORT = 0xf4 
 
-async def main(payload_size) -> None:
+async def main(payload_size, base_url) -> None:
     # Configure logging to show INFO level messages
     logging.basicConfig(level=logging.INFO)
     logger = logging.getLogger(__name__)  # Get a logger instance
@@ -30,7 +30,8 @@ async def main(payload_size) -> None:
     # --8<-- [start:A2ACardResolver]
 
    # base_url = 'http://localhost:9999'
-    base_url = 'http://192.168.32.10:9999'
+    #base_url = 'http://192.168.32.10:9999'
+    base_url = f'http://{base_url}:9999'
 
     async with httpx.AsyncClient() as httpx_client:
         # Initialize A2ACardResolver
@@ -159,8 +160,9 @@ async def main(payload_size) -> None:
 if __name__ == '__main__':
     import asyncio
 
-    if len(sys.argv) != 2:
-        print(f"Usage: python {sys.argv[0]} <payload_size>")
+    if len(sys.argv) - 1 != 2:
+        print(f"Usage: python {sys.argv[0]} <payload_size> <url>")
         sys.exit(1)
-    payload_size = int(sys.argv[1])     
-    asyncio.run(main(payload_size))
+    payload_size = int(sys.argv[1])
+    base_url = sys.argv[2]
+    asyncio.run(main(payload_size, base_url))

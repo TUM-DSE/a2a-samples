@@ -17,6 +17,11 @@ import sys
 
 if __name__ == '__main__':
 
+    host='192.168.32.10'
+
+    if len(sys.argv) - 1 == 1:
+        host = sys.argv[1]
+
     # --8<-- [start:AgentSkill]
     skill = AgentSkill(
         id='hello_world',
@@ -41,7 +46,8 @@ if __name__ == '__main__':
         name='Hello World Agent',
         description='Just a hello world agent',
         #url='http://localhost:9999/',
-        url='http://192.168.32.10:9999',
+        #url='http://192.168.32.10:9999',
+        url=f'http://{host}:9999',
         version='1.0.0',
         default_input_modes=['text'],
         default_output_modes=['text'],
@@ -81,4 +87,5 @@ if __name__ == '__main__':
 
 
     #uvicorn.run(server.build(), host='0.0.0.0', port=9999)
-    uvicorn.run(server.build(), host='192.168.32.10', port=9999)
+
+    uvicorn.run(server.build(), host=host, port=9999)
