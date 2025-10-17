@@ -12,9 +12,11 @@ from agent_executor import (
     HelloWorldAgentExecutor,  # type: ignore[import-untyped]
 )
 from TimedRequestHandler import *
+import sys
 
 
 if __name__ == '__main__':
+
     # --8<-- [start:AgentSkill]
     skill = AgentSkill(
         id='hello_world',
@@ -68,7 +70,7 @@ if __name__ == '__main__':
     #request_handler = DefaultRequestHandler(
     request_handler = TimedRequestHandler(
         agent_executor=HelloWorldAgentExecutor(),
-        task_store=InMemoryTaskStore(),
+        task_store=InMemoryTaskStore()
     )
 
     server = A2AStarletteApplication(

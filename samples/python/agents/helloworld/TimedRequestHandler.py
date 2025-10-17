@@ -93,7 +93,7 @@ class TimedRequestHandler(RequestHandler):
         # TODO: Likely want an interface for managing this, like AgentExecutionManager.
         self._running_agents = {}
         self._running_agents_lock = asyncio.Lock()
-        print("Inside custom request handler!")
+        #print("Inside custom request handler!")
 
     async def on_get_task(
         self,
@@ -101,7 +101,7 @@ class TimedRequestHandler(RequestHandler):
         context: ServerCallContext | None = None,
     ) -> Task | None:
         """Default handler for 'tasks/get'."""
-        print("In 'on_get_task'!")
+        #print("In 'on_get_task'!")
         task: Task | None = await self.task_store.get(params.id)
         if not task:
             raise ServerError(error=TaskNotFoundError())
@@ -114,7 +114,7 @@ class TimedRequestHandler(RequestHandler):
 
         Attempts to cancel the task managed by the `AgentExecutor`.
         """
-        print("In 'cancel_task'!")
+        #print("In 'cancel_task'!")
         task: Task | None = await self.task_store.get(params.id)
         if not task:
             raise ServerError(error=TaskNotFoundError())
@@ -164,7 +164,7 @@ class TimedRequestHandler(RequestHandler):
             request: The request context for the agent.
             queue: The event queue for the agent to publish to.
         """
-        print("In '_run_event_stream'!")
+        #print("In '_run_event_stream'!")
         await self.agent_executor.execute(request, queue)
         await queue.close()
 
@@ -178,7 +178,7 @@ class TimedRequestHandler(RequestHandler):
         Returns:
             A tuple of (task_manager, task_id, queue, result_aggregator, producer_task)
         """
-        print("In '_setup_message_execution'!")
+        #print("In '_setup_message_execution'!")
         # Create task manager and validate existing task
         task_manager = TaskManager(
             task_id=params.message.task_id,
@@ -239,7 +239,7 @@ class TimedRequestHandler(RequestHandler):
 
     def _validate_task_id_match(self, task_id: str, event_task_id: str) -> None:
         """Validates that agent-generated task ID matches the expected task ID."""
-        print("In '_validate_task_id_match'!")
+        #print("In '_validate_task_id_match'!")
         if task_id != event_task_id:
             logger.error(
                 f'Agent generated task_id={event_task_id} does not match the RequestContext task_id={task_id}.'
@@ -252,7 +252,7 @@ class TimedRequestHandler(RequestHandler):
         self, task_id: str, result_aggregator: ResultAggregator
     ) -> None:
         """Sends push notification if configured and task is available."""
-        print("In '_send_push_notification'!")
+        #print("In '_send_push_notification'!")
         if self._push_sender and task_id:
             latest_task = await result_aggregator.current_result
             if isinstance(latest_task, Task):
@@ -268,10 +268,12 @@ class TimedRequestHandler(RequestHandler):
         Starts the agent execution for the message and waits for the final
         result (Task or Message).
         """
+        payload_size = int(params.message.context_id)
+        #payload_size = params.message.parts[0].root.size
         lib.my_ioperm(c_ushort(BENCHMARK_PORT));
-        lib.my_outl(1, c_ubyte(201))
+        lib.my_outl(payload_size, c_ubyte(201))
         #print("In 'on_message_send'!")
-        print(f'Message send params: {params}')
+        #print(f'Message send params: {params}')
         #print(f'ServerCallContext: {context}')
         (
             task_manager,
@@ -318,7 +320,7 @@ class TimedRequestHandler(RequestHandler):
             else:
                 await self._cleanup_producer(producer_task, task_id)
 
-        lib.my_outl(1, c_ubyte(202))
+        lib.my_outl(payload_size, c_ubyte(202))
         return result
 
     async def on_message_send_stream(
@@ -331,7 +333,7 @@ class TimedRequestHandler(RequestHandler):
         Starts the agent execution and yields events as they are produced
         by the agent.
         """
-        print("In 'on_message_send_stream'!")
+        #print("In 'on_message_send_stream'!")
         (
             task_manager,
             task_id,
@@ -358,7 +360,7 @@ class TimedRequestHandler(RequestHandler):
         self, task_id: str, producer_task: asyncio.Task
     ) -> None:
         """Registers the agent execution task with the handler."""
-        print("In '_register_producer'!")
+        #print("In '_register_producer'!")
         async with self._running_agents_lock:
             self._running_agents[task_id] = producer_task
 
@@ -368,7 +370,7 @@ class TimedRequestHandler(RequestHandler):
         task_id: str,
     ) -> None:
         """Cleans up the agent execution task and queue manager entry."""
-        print("In '_cleanup_producer'!")
+        #print("In '_cleanup_producer'!")
         await producer_task
         await self._queue_manager.close(task_id)
         async with self._running_agents_lock:
@@ -383,7 +385,7 @@ class TimedRequestHandler(RequestHandler):
 
         Requires a `PushNotifier` to be configured.
         """
-        print("In 'on_set_task_push_notification_config'!")
+        #print("In 'on_set_task_push_notification_config'!")
         if not self._push_config_store:
             raise ServerError(error=UnsupportedOperationError())
 
@@ -407,7 +409,7 @@ class TimedRequestHandler(RequestHandler):
 
         Requires a `PushConfigStore` to be configured.
         """
-        print("In 'on_get_task_push_notification_config'!")
+        #print("In 'on_get_task_push_notification_config'!")
         if not self._push_config_store:
             raise ServerError(error=UnsupportedOperationError())
 
@@ -440,7 +442,7 @@ class TimedRequestHandler(RequestHandler):
         Allows a client to re-attach to a running streaming task's event stream.
         Requires the task and its queue to still be active.
         """
-        print("In 'on_resubscribe_to_task'!")
+        #print("In 'on_resubscribe_to_task'!")
         task: Task | None = await self.task_store.get(params.id)
         if not task:
             raise ServerError(error=TaskNotFoundError())
@@ -478,7 +480,7 @@ class TimedRequestHandler(RequestHandler):
 
         Requires a `PushConfigStore` to be configured.
         """
-        print("In 'on_list_task_push_notification_config'!")
+        #print("In 'on_list_task_push_notification_config'!")
         if not self._push_config_store:
             raise ServerError(error=UnsupportedOperationError())
 
@@ -510,7 +512,7 @@ class TimedRequestHandler(RequestHandler):
 
         Requires a `PushConfigStore` to be configured.
         """
-        print("In 'on_delete_task_push_notification_config'!")
+        #print("In 'on_delete_task_push_notification_config'!")
         if not self._push_config_store:
             raise ServerError(error=UnsupportedOperationError())
 

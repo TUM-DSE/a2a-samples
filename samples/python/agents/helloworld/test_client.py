@@ -119,6 +119,7 @@ async def main(payload_size) -> None:
         send_message_payload: dict[str, Any] = {
             'message': {
                 'role': 'user',
+                'context_id': f'{payload_size}',
                 'parts': [
                     {'kind': 'text', 'text': f'{text}'}
                 ],
@@ -132,9 +133,9 @@ async def main(payload_size) -> None:
         for i in range(100):
             print(f'{i}/100')
             lib.my_ioperm(c_ushort(BENCHMARK_PORT));
-            lib.my_outl(1, c_ubyte(200))
+            lib.my_outl(payload_size, c_ubyte(200))
             response = await client.send_message(request)
-            lib.my_outl(1, c_ubyte(203))
+            lib.my_outl(payload_size, c_ubyte(203))
         print(response.model_dump(mode='json', exclude_none=True))
         # --8<-- [end:send_message]
 
