@@ -1,7 +1,7 @@
 #!/bin/bash
 
 print_help(){
-	echo "Usage: $0 <VM/CVM/Vanilla/Guardian> [base_url]"
+	echo "Usage: $0 <VM/CVM/Vanilla> [base_url]"
 	exit 0
 }
 

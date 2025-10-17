@@ -42,17 +42,6 @@ if __name__ == "__main__":
         sys.exit(1)
     
     payload_size = int(sys.argv[1])
-    text = "a" * payload_size
-
-    
-    text_part = TextPart(text=text, kind="text")
-    part = Part(root=text_part)
-    message = Message(messageId="msg-001", role="user", parts=[part], context_id=f'{payload_size}')
-    params = MessageSendParams(message=message, metadata={}, context_id=payload_size)
-    req = SendMessageRequest(id="req-001", params=params)
-    
-    # Pre-serialize to bytes (do once, reuse)
-    json_bytes = req.model_dump_json(exclude_none=True).encode()
     
     # Connect to shared memory buffers
     shm_req = shared_memory.SharedMemory(name="test_shm_req", create=False)
@@ -88,30 +77,42 @@ if __name__ == "__main__":
     #    else:
     #        print(f"Warmup ({elapsed*1000:.2f}ms)")
     
-    try:
+    for p_size in range(500, 10001, 500):
+        payload_size = p_size
+        text = "a" * payload_size
+
+        
+        text_part = TextPart(text=text, kind="text")
+        part = Part(root=text_part)
+        message = Message(messageId="msg-001", role="user", parts=[part], context_id=f'{payload_size}')
+        params = MessageSendParams(message=message, metadata={}, context_id=payload_size)
+        req = SendMessageRequest(id="req-001", params=params)
+        
+        # Pre-serialize to bytes (do once, reuse)
+        json_bytes = req.model_dump_json(exclude_none=True).encode()
         for i in range(100):
             print(f"Request {i+1}/100", end=" ")
-            
-            start = time.perf_counter()
-            
+                
+            #start = time.perf_counter()
+                
             # Send request and wait for response
             response = client_send(json_bytes, shm_req, shm_resp, shm_flag, payload_size)
-            
-            elapsed = time.perf_counter() - start
-            
+                
+            #elapsed = time.perf_counter() - start
+                
             # Send completion signal
             lib.my_outl(payload_size, c_ubyte(203))
-            
+                
             # Print result
             if 'error' in response:
                 print(f"Error: {response['error']}")
             else:
-                #print('OK')
-                print(f"OK ({elapsed*1000:.2f}ms)")
-            
+                print('OK')
+                #print(f"OK ({elapsed*1000:.2f}ms)")
+                
             time.sleep(0.01)  # Minimal delay
-            
-    finally:
-        shm_req.close()
-        shm_resp.close()
-        shm_flag.close()
+        time.sleep(1)
+                
+    shm_req.close()
+    shm_resp.close()
+    shm_flag.close()
