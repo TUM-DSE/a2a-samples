@@ -11,7 +11,7 @@ fi
 
 base_url=''
 if [ $1 = "VM" ] || [ $1 = "CVM" ]; then
-	cd ../../../agents/a2a-samples/samples/python/agents/helloworld
+	#cd ../../../agents/a2a-samples/samples/python/agents/helloworld
 	base_url='http://192.168.32.10:9999'
 fi
 
@@ -22,7 +22,10 @@ fi
 
 source .venv/bin/activate || exit
 
-for i in $(seq 500 500 10000)
+sizes=(64 256 1024 $((8 * 1024)) $((16 * 1024)) $((64 * 1024)) $((256 * 1024)) $((1024 * 1024)))
+
+
+for i in ${sizes[@]};
 do
 	python3 test_client.py $i $base_url
 done

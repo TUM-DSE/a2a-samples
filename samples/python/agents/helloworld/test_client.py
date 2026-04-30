@@ -131,12 +131,13 @@ async def main(payload_size, base_url) -> None:
             id=str(uuid4()), params=MessageSendParams(**send_message_payload)
         )
 
-        for i in range(100):
-            print(f'{i}/100')
+        for i in range(10000):
+            print(f'{i}/10000')
             lib.my_ioperm(c_ushort(BENCHMARK_PORT));
-            lib.my_outl(payload_size, c_ubyte(200))
+            returned_size = convert_to_bpfsize(payload_size)
+            lib.my_outl(returned_size, c_ubyte(200))
             response = await client.send_message(request)
-            lib.my_outl(payload_size, c_ubyte(203))
+            lib.my_outl(returned_size, c_ubyte(203))
         print(response.model_dump(mode='json', exclude_none=True))
         # --8<-- [end:send_message]
 

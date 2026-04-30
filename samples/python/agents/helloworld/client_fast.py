@@ -18,7 +18,8 @@ def client_send(payload_bytes, shm_req, shm_resp, shm_flag, payload_size):
     
     # Send benchmark signal
     lib.my_ioperm(c_ushort(BENCHMARK_PORT))
-    lib.my_outl(payload_size, c_ubyte(200))
+    reported_size = convert_to_bpfsize(payload_size)
+    lib.my_outl(reported_size, c_ubyte(200))
     
     # Set request ready flag
     shm_flag.buf[0] = 1
@@ -77,7 +78,8 @@ if __name__ == "__main__":
     #    else:
     #        print(f"Warmup ({elapsed*1000:.2f}ms)")
     
-    for p_size in range(500, 10001, 500):
+
+    for p_size in [64, 256, 1024, 8 * 1024, 16 * 1024, 64 * 1024, 256 * 1024, 1024 * 1024]:
         payload_size = p_size
         text = "a" * payload_size
 
@@ -101,7 +103,16 @@ if __name__ == "__main__":
             #elapsed = time.perf_counter() - start
                 
             # Send completion signal
-            lib.my_outl(payload_size, c_ubyte(203))
+            reported_size = convert_to_bpfsize(payload_size)
+            #reported_size = payload_size
+            #if payload_size >= (1024 * 1024):
+            #    reported_size = 7000 + payload_size // (1024 * 1024)
+            #elif payload_size >= 1024:
+            #    print(f"Old Payload_size: {payload_size}")
+            #    reported_size = 3000 + payload_size // 1024
+            #    print(f"Payload_size: {reported_size}")
+
+            lib.my_outl(reported_size, c_ubyte(203))
                 
             # Print result
             if 'error' in response:

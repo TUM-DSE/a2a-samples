@@ -271,7 +271,8 @@ class TimedRequestHandler(RequestHandler):
         payload_size = int(params.message.context_id)
         #payload_size = params.message.parts[0].root.size
         lib.my_ioperm(c_ushort(BENCHMARK_PORT));
-        lib.my_outl(payload_size, c_ubyte(201))
+        reported_size = convert_to_bpfsize(payload_size)
+        lib.my_outl(reported_size, c_ubyte(201))
         #print("In 'on_message_send'!")
         #print(f'Message send params: {params}')
         #print(f'ServerCallContext: {context}')
@@ -320,7 +321,8 @@ class TimedRequestHandler(RequestHandler):
             else:
                 await self._cleanup_producer(producer_task, task_id)
 
-        lib.my_outl(payload_size, c_ubyte(202))
+        reported_size = convert_to_bpfsize(payload_size)
+        lib.my_outl(reported_size, c_ubyte(202))
         return result
 
     async def on_message_send_stream(

@@ -65,6 +65,7 @@ async def main_loop(payload_size):
         if not raw:
 #            await asyncio.sleep(0.1)
             continue
+        print(f'Raw: {raw}')
         req = json.loads(raw.decode())
         # mimic ASGI request body and request scope
        # print(f'Request: {raw.decode()}')
@@ -79,7 +80,7 @@ async def main_loop(payload_size):
         # write back to shared memory or another output region...
         # (you define output buffer similarly)
         clean_shm(shm, payload_size)
-        await asyncio.sleep(0.1)
+        #await asyncio.sleep(0.1)
     shm.close()
     shm.unlink()
 
